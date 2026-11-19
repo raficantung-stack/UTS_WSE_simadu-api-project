@@ -1,0 +1,91 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SIMADU API",
+    "version": "1.0.0",
+    "description": "REST API layanan informasi dan pengaduan mahasiswa. Autentikasi menggunakan JWT Bearer Token; akses dibatasi berdasarkan role dan kepemilikan data. Data latihan disimpan dalam memori."
+  },
+  "servers": [{ "url": "http://localhost:3000", "description": "Server lokal untuk demonstrasi UTS" }],
+  "tags": [
+    { "name": "Autentikasi", "description": "Login pengguna" },
+    { "name": "Pengaduan", "description": "Pengelolaan pengaduan mahasiswa" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT", "description": "Masukkan token hasil login tanpa awalan Bearer; Swagger akan menambahkan skema Bearer." }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object", "required": ["username", "password"], "additionalProperties": false,
+        "properties": { "username": { "type": "string", "example": "240104040138" }, "password": { "type": "string", "format": "password", "example": "mhs12345" } }
+      },
+      "LoginResponse": {
+        "type": "object", "properties": {
+          "success": { "type": "boolean", "example": true },
+          "data": { "type": "object", "properties": {
+            "token": { "type": "string" }, "tokenType": { "type": "string", "example": "Bearer" }, "expiresIn": { "type": "integer", "example": 900 },
+            "user": { "$ref": "#/components/schemas/User" }
+          } }
+        }
+      },
+      "User": { "type": "object", "properties": { "id": { "type": "string" }, "username": { "type": "string" }, "name": { "type": "string" }, "role": { "type": "string", "enum": ["mahasiswa", "admin"] } } },
+      "ComplaintInput": {
+        "type": "object", "required": ["judul", "kategori", "deskripsi"], "additionalProperties": false,
+        "properties": {
+          "judul": { "type": "string", "maxLength": 120, "example": "Lampu ruang kelas tidak berfungsi" },
+          "kategori": { "type": "string", "enum": ["Fasilitas", "Akademik", "TI"], "example": "Fasilitas" },
+          "deskripsi": { "type": "string", "maxLength": 2000, "example": "Lampu pada ruang kelas TI-2B mati." }
+        }
+      },
+      "Complaint": {
+        "allOf": [{ "$ref": "#/components/schemas/ComplaintInput" }, { "type": "object", "properties": {
+          "id": { "type": "integer", "example": 3 }, "mahasiswaId": { "type": "string", "example": "240104040138" },
+          "status": { "type": "string", "enum": ["diajukan", "diproses", "selesai"] }, "createdAt": { "type": "string", "format": "date-time" }
+        } }]
+      },
+      "Error": { "type": "object", "properties": { "success": { "type": "boolean", "example": false }, "error": { "type": "object", "properties": { "code": { "type": "string" }, "message": { "type": "string" } } } } }
+    }
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Autentikasi"], "summary": "Login pengguna", "description": "Mengembalikan JWT unik per sesi login. Password pada data pengguna disimpan dalam bentuk hash scrypt.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } } },
+        "responses": {
+          "200": { "description": "Login berhasil", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } } },
+          "400": { "description": "Input login tidak lengkap", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "description": "Kredensial salah" }
+        }
+      }
+    },
+    "/api/pengaduan": {
+      "get": {
+        "tags": ["Pengaduan"], "summary": "Daftar pengaduan sesuai hak akses", "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Daftar pengaduan" }, "401": { "description": "Token tidak ada/tidak valid" } }
+      },
+      "post": {
+        "tags": ["Pengaduan"], "summary": "Membuat pengaduan (mahasiswa)", "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ComplaintInput" } } } },
+        "responses": { "201": { "description": "Pengaduan dibuat" }, "400": { "description": "Validasi gagal" }, "401": { "description": "Token tidak valid" }, "403": { "description": "Role bukan mahasiswa" } }
+      }
+    },
+    "/api/pengaduan/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+      "get": { "tags": ["Pengaduan"], "summary": "Detail pengaduan milik sendiri atau seluruhnya untuk admin", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Detail pengaduan" }, "403": { "description": "Bukan pemilik" }, "404": { "description": "ID tidak ditemukan" } } },
+      "put": {
+        "tags": ["Pengaduan"], "summary": "Mengubah pengaduan sendiri yang masih diajukan", "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ComplaintInput" } } } },
+        "responses": { "200": { "description": "Pengaduan diperbarui" }, "400": { "description": "Validasi gagal" }, "403": { "description": "Role, pemilik, atau status tidak memenuhi" }, "404": { "description": "ID tidak ditemukan" } }
+      },
+      "delete": { "tags": ["Pengaduan"], "summary": "Menghapus pengaduan sendiri yang masih diajukan", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Pengaduan dihapus" }, "403": { "description": "Tidak berhak menghapus" }, "404": { "description": "ID tidak ditemukan" } } }
+    },
+    "/api/pengaduan/{id}/status": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+      "patch": {
+        "tags": ["Pengaduan"], "summary": "Memperbarui status penanganan (admin)", "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["status"], "additionalProperties": false, "properties": { "status": { "type": "string", "enum": ["diajukan", "diproses", "selesai"] } } } } } },
+        "responses": { "200": { "description": "Status diperbarui" }, "400": { "description": "Status tidak valid" }, "403": { "description": "Role bukan admin" }, "404": { "description": "ID tidak ditemukan" } }
+      }
+    }
+  }
+}

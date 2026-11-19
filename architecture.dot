@@ -1,0 +1,16 @@
+digraph SIMADU {
+  graph [rankdir=LR, bgcolor="#f7f9fc", pad="0.25", nodesep="0.42", ranksep="0.60", splines=ortho, fontname="Arial", label="ARSITEKTUR BERLAPIS SIMADU API", labelloc=t, fontsize=20, fontcolor="#183153"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10, color="#9db4ce", fillcolor="#ffffff", fontcolor="#20344d", margin="0.18,0.12"];
+  edge [color="#53799f", penwidth=1.6, arrowsize=0.8];
+  clients [label="CONSUMER\nWeb / Mobile / Postman", fillcolor="#e9f2ff", color="#6d9bd1"];
+  express [label="PROVIDER\nExpress 5\nHTTP + JSON", fillcolor="#dfeeff", color="#4e83c4"];
+  routes [label="ROUTES\n/auth • /pengaduan", fillcolor="#eef5ff"];
+  middleware [label="MIDDLEWARE\nBearer JWT • role\nvalidasi • error handler", fillcolor="#fff4df", color="#daa64b"];
+  controller [label="CONTROLLER\nRequest / Response", fillcolor="#edf9f2", color="#6bb58c"];
+  service [label="SERVICE\nAturan bisnis\nkepemilikan • status", fillcolor="#edf9f2", color="#6bb58c"];
+  repository [label="REPOSITORY\nUser • Pengaduan", fillcolor="#f1edff", color="#9a83d6"];
+  data [shape=cylinder, label="DATA LATIHAN\nArray in-memory", fillcolor="#f6f0ff", color="#9a83d6"];
+  docs [label="OPENAPI JSON\nSwagger UI /docs", fillcolor="#f0f3f7", color="#8c9bab"];
+  clients -> express -> routes -> middleware -> controller -> service -> repository -> data;
+  docs -> express [style=dashed, label="kontrak API", fontname="Arial", fontsize=9, color="#8998a8"];
+}

@@ -1,0 +1,31 @@
+digraph FLOW {
+  graph [rankdir=TB, bgcolor="#f7f9fc", pad="0.25", nodesep="0.28", ranksep="0.42", fontname="Arial", label="ALUR KOMUNIKASI DAN KEAMANAN REQUEST", labelloc=t, fontsize=19, fontcolor="#183153"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10, color="#9db4ce", fillcolor="#ffffff", fontcolor="#20344d", margin="0.17,0.10"];
+  edge [color="#53799f", penwidth=1.5, arrowsize=0.75, fontname="Arial", fontsize=9];
+  start [label="Client mengirim request HTTP + JSON", fillcolor="#e9f2ff"];
+  login [label="POST /api/auth/login\nverifikasi hash password"];
+  issue [label="JWT unik diterbitkan\nsub + role + exp + jti", fillcolor="#edf9f2"];
+  req [label="Request endpoint terlindungi\nAuthorization: Bearer <token>", fillcolor="#e9f2ff"];
+  auth [label="Verifikasi signature, exp, user, role"];
+  valid [shape=diamond, label="Token sah?", fillcolor="#fff4df"];
+  noauth [label="401 Unauthorized", fillcolor="#ffe9e7", color="#d7776f"];
+  access [label="Periksa role + kepemilikan data"];
+  permitted [shape=diamond, label="Diizinkan?", fillcolor="#fff4df"];
+  noaccess [label="403 Forbidden", fillcolor="#ffe9e7", color="#d7776f"];
+  validate [label="Validasi body dan field\nyang diperbolehkan"];
+  good [shape=diamond, label="Input valid?", fillcolor="#fff4df"];
+  bad [label="400 Bad Request", fillcolor="#ffe9e7", color="#d7776f"];
+  service [label="Service menjalankan aturan bisnis"];
+  repo [label="Repository membaca / mengubah data"];
+  response [label="Response JSON + status HTTP\n200 / 201 / 404 / 500", fillcolor="#edf9f2"];
+  start -> login -> issue -> req -> auth -> valid;
+  valid -> noauth [label="Tidak"];
+  valid -> access [label="Ya"];
+  access -> permitted;
+  permitted -> noaccess [label="Tidak"];
+  permitted -> validate [label="Ya"];
+  validate -> good;
+  good -> bad [label="Tidak"];
+  good -> service [label="Ya"];
+  service -> repo -> response;
+}

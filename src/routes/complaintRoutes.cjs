@@ -1,0 +1,14 @@
+'use strict';
+const express = require('express');
+const controller = require('../controllers/complaintController.cjs');
+const { authenticate, authorize } = require('../middleware/authMiddleware.cjs');
+const { validateBody } = require('../middleware/validateBody.cjs');
+const router = express.Router();
+router.use(authenticate);
+router.get('/', controller.list);
+router.get('/:id', controller.getById);
+router.post('/', authorize('mahasiswa'), validateBody(['judul', 'kategori', 'deskripsi'], ['judul', 'kategori', 'deskripsi']), controller.create);
+router.put('/:id', authorize('mahasiswa'), validateBody(['judul', 'kategori', 'deskripsi'], ['judul', 'kategori', 'deskripsi']), controller.update);
+router.patch('/:id/status', authorize('admin'), validateBody(['status'], ['status']), controller.updateStatus);
+router.delete('/:id', authorize('mahasiswa'), controller.remove);
+module.exports = router;

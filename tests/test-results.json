@@ -1,0 +1,355 @@
+{
+  "generatedAt": "2026-11-19T00:35:19.041Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "total": 16,
+  "passed": 16,
+  "failed": 0,
+  "note": "Hasil berasal dari permintaan HTTP aktual ke adaptor smoke test Node.js yang memakai service dan repository yang sama dengan aplikasi Express. Jalankan kembali terhadap server Express setelah npm install.",
+  "results": [
+    {
+      "no": 1,
+      "name": "Login mahasiswa dengan kredensial benar",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "response": {
+        "success": true,
+        "data": {
+          "token": "[REDACTED - token tidak dicatat]",
+          "tokenType": "Bearer",
+          "expiresIn": 900,
+          "user": {
+            "id": "240104040138",
+            "username": "240104040138",
+            "name": "Achmad Mujahid Rafianoor",
+            "role": "mahasiswa"
+          }
+        }
+      }
+    },
+    {
+      "no": 2,
+      "name": "Login dengan password salah",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "passed": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "INVALID_CREDENTIALS",
+          "message": "Kredensial tidak valid"
+        }
+      }
+    },
+    {
+      "no": 3,
+      "name": "Akses endpoint terlindungi tanpa token",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "passed": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "Bearer Token wajib disertakan"
+        }
+      }
+    },
+    {
+      "no": 4,
+      "name": "Akses menggunakan token tidak valid",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "passed": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "Token tidak valid atau telah kedaluwarsa"
+        }
+      }
+    },
+    {
+      "no": 5,
+      "name": "Mahasiswa membuat pengaduan valid",
+      "method": "POST",
+      "endpoint": "/api/pengaduan",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true,
+      "response": {
+        "success": true,
+        "message": "Pengaduan berhasil dibuat",
+        "data": {
+          "id": 3,
+          "mahasiswaId": "240104040138",
+          "judul": "Wi-Fi ruang kelas terputus",
+          "kategori": "TI",
+          "deskripsi": "Koneksi Wi-Fi ruang kelas sering terputus saat kuliah.",
+          "status": "diajukan",
+          "createdAt": "2026-11-19T00:35:18.988Z"
+        }
+      }
+    },
+    {
+      "no": 6,
+      "name": "Mahasiswa membaca pengaduan sendiri",
+      "method": "GET",
+      "endpoint": "/api/pengaduan/3",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 3,
+          "mahasiswaId": "240104040138",
+          "judul": "Wi-Fi ruang kelas terputus",
+          "kategori": "TI",
+          "deskripsi": "Koneksi Wi-Fi ruang kelas sering terputus saat kuliah.",
+          "status": "diajukan",
+          "createdAt": "2026-11-19T00:35:18.988Z"
+        }
+      }
+    },
+    {
+      "no": 7,
+      "name": "Mahasiswa mencoba membaca pengaduan orang lain",
+      "method": "GET",
+      "endpoint": "/api/pengaduan/2",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "passed": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "Anda tidak berhak mengakses pengaduan milik pengguna lain"
+        }
+      }
+    },
+    {
+      "no": 8,
+      "name": "Mahasiswa mencoba mengubah status pengaduan",
+      "method": "PATCH",
+      "endpoint": "/api/pengaduan/3/status",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "passed": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "Anda tidak memiliki hak untuk operasi ini"
+        }
+      }
+    },
+    {
+      "no": 9,
+      "name": "Admin login dengan kredensial benar",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "response": {
+        "success": true,
+        "data": {
+          "token": "[REDACTED - token tidak dicatat]",
+          "tokenType": "Bearer",
+          "expiresIn": 900,
+          "user": {
+            "id": "admin-001",
+            "username": "admin",
+            "name": "Administrator SIMADU",
+            "role": "admin"
+          }
+        }
+      }
+    },
+    {
+      "no": 10,
+      "name": "Admin melihat seluruh pengaduan",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "response": {
+        "success": true,
+        "data": [
+          {
+            "id": 1,
+            "mahasiswaId": "240104040138",
+            "judul": "Lampu ruang kelas tidak berfungsi",
+            "kategori": "Fasilitas",
+            "deskripsi": "Lampu pada ruang kelas TI-2B mati sejak perkuliahan pagi.",
+            "status": "diajukan",
+            "createdAt": "2026-11-18T08:30:00.000Z"
+          },
+          {
+            "id": 2,
+            "mahasiswaId": "240104040139",
+            "judul": "Perbaikan akses portal akademik",
+            "kategori": "Akademik",
+            "deskripsi": "Portal akademik sulit dibuka ketika pengisian KRS.",
+            "status": "diajukan",
+            "createdAt": "2026-11-18T09:00:00.000Z"
+          },
+          {
+            "id": 3,
+            "mahasiswaId": "240104040138",
+            "judul": "Wi-Fi ruang kelas terputus",
+            "kategori": "TI",
+            "deskripsi": "Koneksi Wi-Fi ruang kelas sering terputus saat kuliah.",
+            "status": "diajukan",
+            "createdAt": "2026-11-19T00:35:18.988Z"
+          }
+        ],
+        "meta": {
+          "total": 3
+        }
+      }
+    },
+    {
+      "no": 11,
+      "name": "Admin memperbarui status pengaduan",
+      "method": "PATCH",
+      "endpoint": "/api/pengaduan/3/status",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "response": {
+        "success": true,
+        "message": "Status pengaduan berhasil diperbarui",
+        "data": {
+          "id": 3,
+          "mahasiswaId": "240104040138",
+          "judul": "Wi-Fi ruang kelas terputus",
+          "kategori": "TI",
+          "deskripsi": "Koneksi Wi-Fi ruang kelas sering terputus saat kuliah.",
+          "status": "diproses",
+          "createdAt": "2026-11-19T00:35:18.988Z"
+        }
+      }
+    },
+    {
+      "no": 12,
+      "name": "Pengaduan dengan field wajib kosong ditolak",
+      "method": "POST",
+      "endpoint": "/api/pengaduan",
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "passed": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Field judul wajib diisi"
+        }
+      }
+    },
+    {
+      "no": 13,
+      "name": "Mengakses ID pengaduan yang tidak ditemukan",
+      "method": "GET",
+      "endpoint": "/api/pengaduan/999999",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Pengaduan tidak ditemukan"
+        }
+      }
+    },
+    {
+      "no": 14,
+      "name": "Pemeriksaan integritas data setelah input ditolak",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "response": {
+        "success": true,
+        "data": [
+          {
+            "id": 1,
+            "mahasiswaId": "240104040138",
+            "judul": "Lampu ruang kelas tidak berfungsi",
+            "kategori": "Fasilitas",
+            "deskripsi": "Lampu pada ruang kelas TI-2B mati sejak perkuliahan pagi.",
+            "status": "diajukan",
+            "createdAt": "2026-11-18T08:30:00.000Z"
+          },
+          {
+            "id": 2,
+            "mahasiswaId": "240104040139",
+            "judul": "Perbaikan akses portal akademik",
+            "kategori": "Akademik",
+            "deskripsi": "Portal akademik sulit dibuka ketika pengisian KRS.",
+            "status": "diajukan",
+            "createdAt": "2026-11-18T09:00:00.000Z"
+          },
+          {
+            "id": 3,
+            "mahasiswaId": "240104040138",
+            "judul": "Wi-Fi ruang kelas terputus",
+            "kategori": "TI",
+            "deskripsi": "Koneksi Wi-Fi ruang kelas sering terputus saat kuliah.",
+            "status": "diproses",
+            "createdAt": "2026-11-19T00:35:18.988Z"
+          }
+        ],
+        "meta": {
+          "total": 3
+        }
+      }
+    },
+    {
+      "no": 15,
+      "name": "Pemeriksaan status tetap diproses setelah percobaan mahasiswa",
+      "method": "GET",
+      "endpoint": "/api/pengaduan/3",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 3,
+          "mahasiswaId": "240104040138",
+          "judul": "Wi-Fi ruang kelas terputus",
+          "kategori": "TI",
+          "deskripsi": "Koneksi Wi-Fi ruang kelas sering terputus saat kuliah.",
+          "status": "diproses",
+          "createdAt": "2026-11-19T00:35:18.988Z"
+        }
+      }
+    },
+    {
+      "no": 16,
+      "name": "Integritas: input 400 tidak menambah record dan percobaan PATCH mahasiswa tidak mengubah status",
+      "method": "ASSERT",
+      "endpoint": "test assertions",
+      "expectedStatus": "count=3; status=diproses",
+      "actualStatus": "count=3; status=diproses",
+      "passed": true,
+      "response": {
+        "invalidInputWasRejected": true,
+        "idNotFoundWasRejected": true
+      }
+    }
+  ]
+}
